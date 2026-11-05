@@ -120,19 +120,19 @@ window.CAAITVisuals = (() => {
   }
 
   /* ---------- Stage ladder: the roadmap as an ordered progression ---------- */
+  /* The roadmap reads as a journey: one rail that draws itself, numbered stops that
+     settle in sequence, and a slow pulse so the ladder never looks frozen. */
   function stages(items) {
     const colours = ['#cdbdf2', '#b795f2', '#a179ec', '#8b5ce3', '#7340d2', '#5b21c7'];
-    // A stage with no date simply shows none: the ladder reads by order, not by calendar.
-    return `<ol class="stage-track">${items.map((item, index) => {
-      const colour = colours[index % colours.length];
+    const steps = items.map((item, index) => {
       const date = String(item.date || '').trim();
-      return `<li class="stage" style="--stage:${colour}">` +
-        `<span class="stage-rail" aria-hidden="true"></span>` +
-        `<span class="stage-node" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>` +
-        `<h3>${escape(item.title)}</h3>` +
+      return `<li class="journey-step" style="--stage:${colours[index % colours.length]};--i:${index}">` +
+        `<span class="journey-dot" aria-hidden="true"><i>${String(index + 1).padStart(2, '0')}</i></span>` +
+        `<div class="journey-card"><h3>${escape(item.title)}</h3>` +
         (date ? `<p class="stage-date">${escape(date)}</p>` : '') +
-        `<p class="stage-body">${escape(item.body)}</p></li>`;
-    }).join('')}</ol>`;
+        `<p class="stage-body">${escape(item.body)}</p></div></li>`;
+    }).join('');
+    return `<div class="journey"><span class="journey-rail" aria-hidden="true"><span class="journey-progress"></span></span><ol class="journey-steps">${steps}</ol></div>`;
   }
 
   /* ---------- Neural field: a living echo of the logo's node mesh ----------
@@ -383,7 +383,7 @@ window.CAAITVisuals = (() => {
     wireNeural(root);
 
     const counters = root.querySelectorAll('[data-count]:not([data-counted])');
-    const targets = root.querySelectorAll('.stat,.bar-fill,.trend-line,.trend-area,.trend-dot,.trend-peak,.trend-end,.donut-wrap,.column-mark,.column-value,.intro-grid,.admin-welcome,.training-metric,.chart-card-title,.stage');
+    const targets = root.querySelectorAll('.stat,.bar-fill,.trend-line,.trend-area,.trend-dot,.trend-peak,.trend-end,.donut-wrap,.column-mark,.column-value,.intro-grid,.admin-welcome,.training-metric,.chart-card-title,.journey-step,.journey-progress,.org-node');
     if (reduced.matches) {
       counters.forEach(node => { node.dataset.counted = 'true'; countUp(node); });
       return;
@@ -399,7 +399,8 @@ window.CAAITVisuals = (() => {
         const order = node.parentElement ? [...node.parentElement.children].indexOf(node) : 0;
         let frames = [{opacity:0, transform:'translateY(12px)'}, {opacity:1, transform:'translateY(0)'}];
         let duration = 650, delay = 0;
-        if (node.classList.contains('stat') || node.classList.contains('stage')) delay = order * 70;
+        if (node.classList.contains('stat') || node.classList.contains('journey-step') || node.classList.contains('org-node')) delay = order * 85;
+        if (node.classList.contains('journey-progress')) { frames = [{transform:'scaleX(0)'}, {transform:'scaleX(1)'}]; duration = 1400; }
         if (node.classList.contains('bar-fill')) frames = [{transform:'scaleX(0)'}, {transform:'scaleX(1)'}];
         if (node.classList.contains('column-mark')) { frames = [{transform:'scaleY(0)'}, {transform:'scaleY(1)'}]; duration = 720; delay = order * 10; }
         if (node.classList.contains('column-value')) { frames = [{opacity:0}, {opacity:1}]; delay = 420; }

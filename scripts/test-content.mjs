@@ -104,9 +104,9 @@ check('Untrusted text is escaped everywhere it reaches the DOM', () => {
   }
 });
 
-check('Stage ladder keeps its order and omits dates it does not have', () => {
+check('Journey keeps its order and omits dates it does not have', () => {
   const html = viz.stages(data.roadmap.map(([title, date, body]) => ({title, date, body})));
-  assert.equal([...html.matchAll(/class="stage"/g)].length, 6);
+  assert.equal([...html.matchAll(/class="journey-step"/g)].length, 6);
   assert.equal([...html.matchAll(/class="stage-date"/g)].length, 2, 'only the two dated stages render a date');
   assert.ok(html.indexOf('Penubuhan') < html.indexOf('Hala tuju'), 'stages stay in recorded order');
 });
@@ -135,6 +135,18 @@ check('Decorative neural field is inert and carries no meaning', () => {
   const field = viz.neural({max: 40});
   assert.ok(field.includes('aria-hidden=' + String.fromCharCode(34) + 'true' + String.fromCharCode(34)), 'hidden from assistive tech');
   assert.ok(!/ on[a-z]+=/i.test(field), 'no inline event handler');
+});
+
+check('Organisation chain holds five roles, each with a portrait', () => {
+  assert.equal(data.organization.length, 5);
+  const names = data.organization.map(r => r[0]).join(' | ');
+  assert.ok(!/Azman|Ainie/i.test(names), 'removed roles must not come back');
+  assert.match(data.organization[3][0], /Marlina/, 'Marlina sits fourth, under Norman');
+  assert.match(data.organization[4][0], /Akhyar/, 'Akhyar sits fifth, under Marlina');
+  for (const [name, role, photo] of data.organization) {
+    assert.ok(name && role && photo, name + ' is missing a field');
+  }
+  assert.equal(data.coordinators.length, 7);
 });
 
 console.log(JSON.stringify({passed: results.length, results}, null, 2));

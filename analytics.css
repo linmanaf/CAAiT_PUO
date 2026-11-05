@@ -16,7 +16,6 @@ body{background:var(--surface)}
 h1,h2,h3{text-wrap:balance}
 .topbar{box-shadow:0 1px 0 #1a0b4208}
 .panel{box-shadow:var(--shadow-sm);border-color:var(--card-ring)}
-.btn,.training-link,.training-metric,.stat,.stage{transition:transform .2s,background .2s,box-shadow .2s,border-color .2s}
 .btn:active{transform:translateY(1px)}
 .btn{background:var(--violet);border-color:var(--violet)}
 .btn.secondary{background:#fff;color:var(--violet);border-color:var(--card-ring)}
@@ -129,16 +128,7 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
 .chart-scrubber{font-size:12px;color:var(--muted);margin:12px 0 0;font-weight:600}
 .chart-scrubber input{accent-color:var(--c-violet);padding:0;border:0;cursor:ew-resize;width:100%;height:22px;margin-top:6px}
 
-/* ---------------- Stage track (roadmap) ---------------- */
-.stage-track{list-style:none;margin:22px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
-.stage{position:relative;padding:20px 16px 18px;background:var(--tint-2);border:1px solid var(--card-ring);border-radius:12px;min-width:0}
-.stage-rail{position:absolute;inset:0 0 auto 0;height:4px;border-radius:12px 12px 0 0;background:var(--stage)}
-.stage-index{display:inline-block;font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
-.stage h3{font-size:15px;margin:0 0 6px;color:var(--text)}
 .stage-date{font-size:11px;font-weight:700;color:var(--violet);margin:0 0 8px;text-transform:uppercase;letter-spacing:.4px}
-.stage-date.is-undated{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;opacity:.85}
-.stage p:last-child{font-size:12.5px;color:var(--muted);margin:0;line-height:1.55}
-@media(hover:hover){.stage:hover{transform:translateY(-3px);background:#fff;box-shadow:var(--shadow-sm)}}
 
 /* ---------------- Dashboard layout ---------------- */
 .chart-row{display:grid;grid-template-columns:1.55fr 1fr;gap:24px;align-items:start}
@@ -192,7 +182,6 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
 @keyframes success-check{to{stroke-dashoffset:0}}
 
 /* ---------------- Responsive ---------------- */
-@media(max-width:1280px){.stage-track{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:1100px){
   .chart-row{grid-template-columns:1fr}
   .composition-panel .composition{flex-direction:row;align-items:center}
@@ -202,7 +191,6 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
   .training-metric{grid-template-columns:25px 1fr auto}
 }
 @media(max-width:760px){
-  .stage-track{grid-template-columns:1fr}
   .admin-welcome{padding:22px}
   .admin-chart-grid{grid-template-columns:1fr}
   .chart-card{padding:16px}
@@ -228,7 +216,6 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .hero-mesh{animation:none!important}
-  .stat:hover,.stage:hover,.training-metric:hover{transform:none}
   .success-dialog[open] path{stroke-dashoffset:0}
 }
 .offline-note{border-left-color:var(--c-accent);background:#fdeef6;font-weight:600;margin:0 0 24px}
@@ -254,11 +241,6 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
 .welcome-marks span{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}
 @keyframes welcome-rise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
 
-/* ---------------- Stage ladder refinements ---------------- */
-.stage{padding-top:30px}
-.stage-node{position:absolute;top:14px;right:14px;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;
-  background:var(--stage);color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px;box-shadow:0 4px 12px #5b21c726}
-.stage h3{padding-right:38px}
 .stage-date{display:inline-block;background:var(--tint);border-radius:999px;padding:3px 10px;font-size:10.5px}
 .stage-body{font-size:12.5px;color:var(--muted);margin:0;line-height:1.55}
 
@@ -272,3 +254,65 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
 /* Keeps the headline readable where the neural field runs densest. */
 .welcome-inner::before{content:'';position:absolute;inset:-6% -14%;z-index:-1;border-radius:50%;
   background:radial-gradient(ellipse at center,#fcfaffF2 0%,#fcfaffD9 46%,transparent 74%)}
+
+/* ---------------- Roadmap as a journey ---------------- */
+.btn,.training-link,.training-metric,.stat,.journey-card{transition:transform .2s,background .2s,box-shadow .2s,border-color .2s}
+.journey{position:relative;margin-top:30px;padding-top:4px}
+.journey-rail{position:absolute;left:7%;right:7%;top:30px;height:3px;border-radius:2px;background:var(--c-track);overflow:hidden}
+.journey-progress{display:block;height:100%;width:100%;transform-origin:left center;
+  background:linear-gradient(90deg,#cdbdf2,#a179ec 40%,#7340d2 72%,#5b21c7)}
+.journey-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;position:relative}
+.journey-step{position:relative;min-width:0;display:flex;flex-direction:column}
+.journey-dot{position:relative;z-index:1;display:grid;place-items:center;width:56px;height:56px;margin:0 auto 16px;
+  border-radius:50%;background:#fff;border:3px solid var(--stage);
+  font-size:13px;font-weight:800;color:var(--violet);box-shadow:0 6px 18px #5b21c71f}
+.journey-dot i{font-style:normal}
+.journey-dot::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid var(--stage);
+  opacity:0;animation:journey-pulse 3.4s cubic-bezier(.3,.7,.4,1) infinite;animation-delay:calc(var(--i) * .4s)}
+@keyframes journey-pulse{0%{transform:scale(.88);opacity:.5}65%{transform:scale(1.3);opacity:0}100%{opacity:0}}
+.journey-card{background:var(--tint-2);border:1px solid var(--card-ring);border-radius:12px;padding:16px 14px;text-align:center;flex:1}
+.journey-card h3{font-size:14.5px;margin:0 0 7px;color:var(--text);line-height:1.35}
+@media(hover:hover){.journey-step:hover .journey-card{background:#fff;transform:translateY(-3px);box-shadow:var(--shadow-sm)}
+  .journey-step:hover .journey-dot{border-color:var(--c-accent);color:var(--c-accent-ink)}}
+
+/* ---------------- Organisation chain ---------------- */
+.org-panel{padding-top:30px}
+.org-chain{list-style:none;margin:0 auto;padding:0;max-width:540px}
+.org-node{position:relative;display:flex;align-items:center;gap:18px;padding:14px 20px;margin-bottom:34px;
+  background:var(--card);border:1px solid var(--card-ring);border-left:4px solid var(--c-violet);
+  border-radius:14px;box-shadow:var(--shadow-sm)}
+.org-node:nth-child(n+4){border-left-color:var(--c-accent)}
+.org-node:last-child{margin-bottom:0}
+/* The connector hangs below each card and stops before the last one. */
+.org-link{position:absolute;left:50%;bottom:-34px;width:2px;height:34px;background:linear-gradient(#d9d0f0,#cdbdf2)}
+.org-node:last-child .org-link{display:none}
+.org-face{width:58px;height:58px;border-radius:50%;flex-shrink:0;object-fit:cover;background:#f0ecf8;
+  border:2px solid #fff;box-shadow:0 3px 10px #1a0b4214}
+.org-id strong{display:block;font-size:15px;color:var(--text);line-height:1.3}
+.org-id span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.org-branch{position:relative;max-width:540px;margin:34px auto 0;padding-top:30px;text-align:center}
+.org-branch-line{position:absolute;left:50%;top:-4px;width:2px;height:30px;background:linear-gradient(#cdbdf2,#e3dcf5)}
+.org-branch h3{font-size:14px;margin:0 0 14px;color:var(--text)}
+.org-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.org-chip{font-size:11.5px;font-weight:600;color:var(--violet);background:var(--tint);
+  border:1px solid #e5dcf7;border-radius:999px;padding:6px 13px}
+.org-branch .source{margin-top:16px}
+
+@media(max-width:980px){
+  .journey-steps{grid-template-columns:1fr;gap:0}
+  .journey-rail{left:27px;right:auto;top:10px;bottom:10px;width:3px;height:auto}
+  .journey-progress{width:100%;height:100%;transform-origin:center top;
+    background:linear-gradient(180deg,#cdbdf2,#a179ec 40%,#7340d2 72%,#5b21c7)}
+  .journey-step{display:grid;grid-template-columns:56px 1fr;gap:16px;align-items:start;padding-bottom:16px}
+  .journey-dot{margin:0}
+  .journey-card{text-align:left}
+}
+@media(max-width:760px){
+  .org-node{gap:14px;padding:12px 14px}
+  .org-face{width:48px;height:48px}
+  .org-id strong{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .journey-dot::after{animation:none;opacity:0}
+  .journey-step:hover .journey-card{transform:none}
+}

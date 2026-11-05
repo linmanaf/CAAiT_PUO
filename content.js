@@ -3,8 +3,9 @@ window.CAAIT = {
   intro: 'Center for Applied Artificial Intelligence Technology (CAAiT) ialah pusat inovasi dan pembangunan AI yang memajukan penyelidikan, pembangunan kurikulum, kerjasama industri dan pelaksanaan beretika untuk memperkukuh keupayaan manusia serta landskap teknologi TVET.',
   missions: ['Mengangkat CAAiT sebagai platform utama pemerkasaan AI.','Menerapkan AI dalam kurikulum politeknik.','Bekerjasama dengan industri dalam landskap TVET.','Menyediakan pensijilan AI yang diiktiraf pemimpin industri.'],
   organization: [
-    ['Dr Shamsuri B Abdullah','General Director of JPPKK'],['A. Azman B Arshad','Director BPPI'],['Dr Salmi Che Meh','Director PUO'],['Norman Bin Zamri','Deputy Director (Academic)'],['Ainie Hayati Noruzman','Head of Department JTMK'],['Ts. Marlina Abdul Manaf','Head'],['Mohamad Akhyar Mohd Noor','Assist. Head']
+    ['Dr Shamsuri B Abdullah','General Director of JPPKK','shamsuri'],['Dr Salmi Che Meh','Director PUO','salmi'],['Norman Bin Zamri','Deputy Director (Academic)','norman'],['Ts. Marlina Abdul Manaf','Head','marlina'],['Mohamad Akhyar Mohd Noor','Assist. Head','akhyar']
   ],
+  coordinators: ['JKA','JKE','JKM','JKP','JTMK','JP','JPA'],
   roadmap: [
     ['Penubuhan','Ogos 2024','Penubuhan CAAiT sebagai pusat inovasi dan pembangunan AI gunaan di Politeknik Ungku Omar.'],
     ['Projek','','Mengintegrasikan penyelesaian AI ke dalam projek industri dan kurikulum mengikut keperluan institusi, industri, pihak berkepentingan POLYCC dan komuniti.'],
