@@ -1,6 +1,9 @@
 /* CAAiT SPA: one router, one submit listener, server-backed administration. */
 'use strict';
 const data=window.CAAIT;
+// content.js ships the starting catalogue. Hold on to it: once the API replaces
+// data.training, this is the only copy left to restore from.
+const seedTraining=data.training.slice();
 // getRandomValues also works on trusted LAN HTTP, where randomUUID may be unavailable.
 function randomId(){const bytes=crypto.getRandomValues(new Uint8Array(16));bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;const h=[...bytes].map(b=>b.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
 
@@ -112,11 +115,14 @@ function passwordForm(){return `<section class="panel form-panel"><h2>Tukar kata
 let trainingEditing=null;
 function trainingPanel(){
  const rows=data.training.length?data.training.map(t=>`<div class="training-row${trainingEditing===t.id?' is-editing':''}"><div class="training-row-id"><strong>${e(t.title)}</strong><span>${e(t.id)} · ${e(t.tag)}</span></div><div class="training-row-actions"><button type="button" class="btn secondary" data-train-edit="${e(t.id)}">Edit</button><button type="button" class="btn secondary is-danger" data-train-delete="${e(t.id)}">Buang</button></div></div>`).join(''):'<p class="empty">Belum ada modul latihan. Tambah satu di bawah.</p>';
+ const have=new Set(data.training.map(t=>t.id));
+ const missing=seedTraining.filter(t=>!have.has(t.id));
+ const restore=missing.length?`<div class="training-restore"><div><strong>${missing.length} modul asal tiada dalam senarai</strong><span>${e(missing.map(t=>t.title).join(', '))}</span></div><button type="button" class="btn" id="training-restore">Pulihkan modul asal</button></div>`:'';
  const current=trainingEditing?data.training.find(x=>x.id===trainingEditing):null;
  const r=current?toRow(current):{};
  const text=(name,label,hint)=>`<label>${e(label)}<input name="${name}" value="${e(r[name]??'')}" maxlength="400" required>${hint?`<span class="field-hint">${e(hint)}</span>`:''}</label>`;
  const area=(name,label,hint,rows)=>`<label>${e(label)}<textarea name="${name}" rows="${rows}" maxlength="8000">${e(r[name]??'')}</textarea><span class="field-hint">${e(hint)}</span></label>`;
- return `<div class="training-list">${rows}</div>
+ return `${restore}<div class="training-list">${rows}</div>
 <form id="training-form" class="training-form section-gap"><h3>${current?'Kemas kini modul: '+e(current.title):'Tambah modul baharu'}</h3>
 <div class="grid-2"><label>Pengecam (URL)<input name="slug" value="${e(r.slug??'')}" maxlength="40" required pattern="[a-z0-9]([a-z0-9]|-){1,39}" ${current?'readonly':''}><span class="field-hint">${current?'Pengecam dikunci selepas modul dicipta.':'Huruf kecil, nombor dan sengkang. Contoh: power-bi'}</span></label>${text('title','Tajuk')}</div>
 <div class="grid-2">${text('tag','Kategori','Contoh: Reka bentuk & komunikasi')}${text('description','Penerangan ringkas')}</div>
@@ -177,6 +183,25 @@ content.addEventListener('click',async ev=>{if(ev.target.id==='retry')render();
  const edit=ev.target.dataset?.trainEdit;
  if(edit){trainingEditing=edit;renderTrainingPanel();document.querySelector('#training-form')?.scrollIntoView({block:'center'});return;}
  if(ev.target.id==='training-cancel'){trainingEditing=null;renderTrainingPanel();return;}
+ if(ev.target.id==='training-restore'){
+  const button=ev.target;button.disabled=true;button.textContent='Memulihkan…';
+  try{
+   const have=new Set(data.training.map(t=>t.id));
+   let added=0;
+   for(const seed of seedTraining){
+    if(have.has(seed.id))continue;
+    await api('training-save',{...toRow(seed),is_new:true});
+    added++;
+   }
+   await reloadTraining();trainingEditing=null;renderTrainingPanel();
+   showSuccess(added+' modul asal berjaya dipulihkan.');
+  }catch(err){
+   button.disabled=false;button.textContent='Pulihkan modul asal';
+   const notice=document.createElement('p');notice.className='inline-error';notice.setAttribute('role','alert');notice.textContent=err.message;
+   document.querySelector('#training-admin')?.prepend(notice);
+  }
+  return;
+ }
  const remove=ev.target.dataset?.trainDelete;
  if(remove){
   const button=ev.target;
