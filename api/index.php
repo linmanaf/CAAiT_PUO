@@ -1,11 +1,17 @@
 <?php
 require __DIR__.'/bootstrap.php';
 $action=$_GET['action']??'session';
-$modules=['welcome','dashboard','about','organization','roadmap','programs','partners','training','canva','bob','github','feedback'];
+$modules=['welcome','dashboard','about','organization','roadmap','programs','partners','training','feedback'];
+// Training modules are admin-managed, so the valid module list follows the table rather than
+// a hard-coded array. Before the table exists the legacy slugs keep analytics working.
+try { foreach (query('SELECT slug FROM training')->fetchAll(PDO::FETCH_COLUMN) as $slug) $modules[]=$slug; }
+catch (Throwable) { array_push($modules,'canva','bob','github'); }
 $method=$_SERVER['REQUEST_METHOD'];
 $input=[];
 if ($method==='POST') {
-    if ((int)($_SERVER['CONTENT_LENGTH']??0)>12000) reply(['error'=>'Permintaan terlalu besar.'],413);
+    // Training bodies carry long-form lesson text; everything else stays small.
+    $maximum = $action==='training-save' ? 60000 : 12000;
+    if ((int)($_SERVER['CONTENT_LENGTH']??0)>$maximum) reply(['error'=>'Permintaan terlalu besar.'],413);
     $input=json_decode(file_get_contents('php://input'),true);
     if (!is_array($input)) reply(['error'=>'Format permintaan tidak sah.'],400);
     foreach ($input as $value) {
@@ -13,7 +19,7 @@ if ($method==='POST') {
     }
     if (!hash_equals($_SESSION['csrf'],$_SERVER['HTTP_X_CSRF_TOKEN']??'')) reply(['error'=>'Sesi tamat. Muat semula halaman.'],403);
 } elseif ($method!=='GET') reply(['error'=>'Kaedah tidak dibenarkan.'],405);
-$writes=['login','logout','password','feedback','event','status','testmode'];
+$writes=['login','logout','password','feedback','event','status','testmode','training-save','training-delete'];
 if (in_array($action,$writes,true) && $method!=='POST') reply(['error'=>'POST diperlukan.'],405);
 if ($action==='session') {
     $user=null;
@@ -65,6 +71,47 @@ if ($action==='event') {
     if (!uuid($input['event_id']??null) || !uuid($input['visitor_id']??null) || !in_array($input['module']??'',$modules,true)) reply(['error'=>'Acara tidak sah.'],422);
     limit('events',240,60);
     query('INSERT IGNORE INTO events(event_id,visitor_id,module,is_test) VALUES (?,?,?,?)',[$input['event_id'],hash('sha256',$input['visitor_id']),$input['module'],(int)($_SESSION['test']??false)]);
+    reply(['ok'=>true]);
+}
+// Public: the training catalogue the dashboard renders.
+if ($action==='training-list') {
+    reply(['items'=>query('SELECT slug,title,tag,description,objectives,requirements,steps,prompt,practice,outcome,sources FROM training ORDER BY position,id')->fetchAll()]);
+}
+if ($action==='training-save') {
+    admin();
+    $slug=strtolower(trim((string)($input['slug']??'')));
+    $isNew=($input['is_new']??false)===true;
+    if (!preg_match('/^[a-z0-9][a-z0-9-]{1,39}$/D',$slug)) reply(['error'=>'Gunakan pengecam 2–40 aksara: huruf kecil, nombor dan sengkang sahaja.'],422);
+    // A slug is an analytics key and a bookmarkable address, so it is set once and then frozen.
+    if (in_array($slug,['welcome','dashboard','about','organization','roadmap','programs','partners','training','feedback','admin'],true)) reply(['error'=>'Pengecam itu digunakan oleh modul sistem. Pilih yang lain.'],422);
+    $fields=['title'=>160,'tag'=>120,'description'=>400];
+    $values=[];
+    foreach ($fields as $name=>$limit) {
+        $values[$name]=trim((string)($input[$name]??''));
+        if ($values[$name]==='' || mb_strlen($values[$name])>$limit) reply(['error'=>"Medan $name wajib diisi dan tidak melebihi $limit aksara."],422);
+    }
+    foreach (['objectives','requirements','steps','prompt','practice','outcome','sources'] as $name) {
+        $values[$name]=trim((string)($input[$name]??''));
+        if (mb_strlen($values[$name])>8000) reply(['error'=>"Medan $name melebihi 8000 aksara."],422);
+    }
+    $existing=query('SELECT id FROM training WHERE slug=?',[$slug])->fetch();
+    if ($isNew && $existing) reply(['error'=>'Pengecam itu sudah wujud. Pilih yang lain.'],409);
+    if (!$isNew && !$existing) reply(['error'=>'Modul itu tidak ditemui.'],404);
+    $args=[$values['title'],$values['tag'],$values['description'],$values['objectives'],$values['requirements'],$values['steps'],$values['prompt'],$values['practice'],$values['outcome'],$values['sources']];
+    if ($existing) {
+        query('UPDATE training SET title=?,tag=?,description=?,objectives=?,requirements=?,steps=?,prompt=?,practice=?,outcome=?,sources=? WHERE slug=?',[...$args,$slug]);
+    } else {
+        $next=(int)query('SELECT COALESCE(MAX(position),0)+1 FROM training')->fetchColumn();
+        query('INSERT INTO training(slug,title,tag,description,objectives,requirements,steps,prompt,practice,outcome,sources,position) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',[$slug,...$args,$next]);
+    }
+    reply(['ok'=>true,'slug'=>$slug],$existing?200:201);
+}
+if ($action==='training-delete') {
+    admin();
+    $slug=(string)($input['slug']??'');
+    if (!query('SELECT id FROM training WHERE slug=?',[$slug])->fetch()) reply(['error'=>'Modul itu tidak ditemui.'],404);
+    // Analytics rows keep their module slug on purpose: deleting a module must not erase history.
+    query('DELETE FROM training WHERE slug=?',[$slug]);
     reply(['ok'=>true]);
 }
 if (in_array($action,['stats','feedback-list','status'],true)) {

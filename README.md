@@ -33,7 +33,9 @@ Untuk mengakses dari peranti lain dalam LAN, gunakan alamat IP komputer XAMPP me
 - `config.example.php`: contoh konfigurasi tanpa rahsia.
 - `scripts/create-admin.php`: penciptaan admin melalui CLI, kata laluan daripada stdin.
 - `scripts/test-api.mjs`: ujian API XAMPP menggunakan akaun sementara.
-- `scripts/test-content.mjs`: ujian kesetiaan data slide dan output carta. Tidak memerlukan Apache atau database — jalankan `node scripts/test-content.mjs`.
+- `scripts/test-content.mjs`: ujian kesetiaan data dan output carta. Tidak memerlukan Apache atau database — jalankan `node scripts/test-content.mjs`.
+- `scripts/build-training-seed.mjs`: menjana `database/training-seed.sql` daripada modul benih dalam `content.js`.
+- `database/training-seed.sql`: jadual modul latihan dan kandungan permulaan, untuk import phpMyAdmin.
 - `docs/SERAHAN.md`: keputusan ujian, audit kandungan dan perkara untuk pengesahan.
 - Halaman HTML lama menghala ke modul berkaitan, supaya pautan lama tidak memaparkan data contoh.
 

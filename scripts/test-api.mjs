@@ -56,6 +56,30 @@ try{
  const normalStats=await normal('stats');assert.equal(normalStats.test,false);
  assert.ok(!(await normal('feedback-list')).items.some(x=>x.id===item.id));
  results.push('Invalid inputs rejected; test feedback excluded from ordinary reports');
+ const trainSlug='qa-'+randomBytes(4).toString('hex');
+ await publicClient('training-save',{slug:trainSlug,title:'x',tag:'x',description:'x'},401);
+ await publicClient('training-delete',{slug:'canva'},401);
+ const seeded=(await publicClient('training-list')).items.length;
+ await normal('training-save',{slug:'dashboard',title:'x',tag:'x',description:'x',is_new:true},422);
+ await normal('training-save',{slug:'NOT VALID',title:'x',tag:'x',description:'x',is_new:true},422);
+ await normal('training-save',{slug:trainSlug,title:'',tag:'x',description:'x',is_new:true},422);
+ await normal('training-save',{slug:trainSlug,title:'QA Modul',tag:'QA',description:'Modul ujian.',objectives:'Satu\nDua',steps:'Tajuk :: Butiran',sources:'Nama :: https://example.com',is_new:true},201);
+ await normal('training-save',{slug:trainSlug,title:'QA Modul',tag:'QA',description:'Modul ujian.',is_new:true},409);
+ const afterAdd=(await publicClient('training-list')).items;
+ assert.equal(afterAdd.length,seeded+1);
+ const created=afterAdd.find(x=>x.slug===trainSlug);
+ assert.equal(created.title,'QA Modul');
+ assert.equal(created.objectives,'Satu\nDua');
+ // A new module becomes a valid analytics key the moment it exists.
+ await publicClient('event',{event_id:randomUUID(),visitor_id:visitor,module:trainSlug});
+ await normal('training-save',{slug:trainSlug,title:'QA Modul Dikemas Kini',tag:'QA',description:'Modul ujian.',is_new:false});
+ assert.equal((await publicClient('training-list')).items.find(x=>x.slug===trainSlug).title,'QA Modul Dikemas Kini');
+ await normal('training-delete',{slug:trainSlug});
+ await normal('training-delete',{slug:trainSlug},404);
+ assert.equal((await publicClient('training-list')).items.length,seeded);
+ // History must outlive the module it describes.
+ await publicClient('event',{event_id:randomUUID(),visitor_id:visitor,module:trainSlug},422);
+ results.push('Training CRUD is admin-only, validates slugs, feeds analytics, and leaves history behind on delete');
  const limited=client();await limited('session');await limited('testmode',{});
  const limitName=username+'_limit';
  for(let i=0;i<8;i++)await limited('login',{username:limitName,password:'wrong'},401);

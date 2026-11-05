@@ -16,6 +16,14 @@ Gunakan Database Wizard / MySQL Databases cPanel untuk mencipta database serta p
 
 Jangan import keseluruhan database sistem `mysql` daripada XAMPP. Isu Aria XAMPP tidak perlu dipindahkan ke hosting.
 
+## 2b. Modul latihan
+
+Import `installation/training-seed.sql` melalui phpMyAdmin pada database yang sama. Ia mencipta jadual `training` dan memuatkan tiga modul permulaan. Selamat diimport berulang kali: modul yang sudah wujud tidak ditulis ganti, jadi suntingan admin tidak hilang.
+
+Selepas itu modul latihan diurus sepenuhnya dari panel admin — tambah, kemas kini dan buang — tanpa perlu menyentuh fail atau database lagi.
+
+Pengecam modul (bahagian selepas `#` dalam URL) dikunci selepas modul dicipta, kerana ia juga kunci rekod analytics dan alamat yang boleh di-bookmark. Membuang modul **tidak** memadam sejarah lawatannya; laporan lama kekal utuh.
+
 ## 3. Konfigurasi persendirian
 
 Salin `installation/config.example.php` menjadi `/home/USERNAME_CPANEL/caait-config.php`, di luar `public_html`. Isi DSN, username database dan password database yang sebenar. Pastikan `environment` ialah `production` dan `secure_cookie` ialah `true`.

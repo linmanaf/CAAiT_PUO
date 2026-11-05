@@ -287,7 +287,7 @@ window.CAAITVisuals = (() => {
       `<line class="chart-guide" x1="0" x2="0" y1="${ceiling}" y2="${floor}" hidden/><circle class="chart-marker" r="5.5" hidden/>` +
       `<text x="${left}" y="248" class="chart-axis">${escape(days[0].label)}</text><text x="${right}" y="248" text-anchor="end" class="chart-axis">${escape(days.at(-1).label)}</text></svg>` +
       `<output class="chart-tooltip" hidden></output>` +
-      `<label class="chart-scrubber">Teroka hari <input type="range" min="0" max="${days.length - 1}" value="${days.length - 1}" aria-label="Pilih hari dalam graf"></label>` +
+      `<label class="chart-scrubber">Teroka hari <input type="range" name="${id}-scrub" min="0" max="${days.length - 1}" value="${days.length - 1}" aria-label="Pilih hari dalam graf"></label>` +
       tableView(days, 'Tarikh', 'Paparan', `Lihat data harian (${days.length} hari)`) + `</div>`;
   }
 
