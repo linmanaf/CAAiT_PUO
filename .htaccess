@@ -1,0 +1,13 @@
+DirectoryIndex index.html
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(?:\.git|\.work|docs|database|scripts|dist)(?:/|$) - [F,L]
+<FilesMatch "^(config.*\.php|.*\.sql|.*\.ogg|.*\.md|.*\.pptx?|.*\.docx?|.*\.xlsx?)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "same-origin"
+Header always set X-Frame-Options "DENY"
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+</IfModule>
