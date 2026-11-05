@@ -103,15 +103,15 @@ window.CAAITVisuals = (() => {
     return `<div class="composition"><div class="donut-wrap"><svg class="donut" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="${radius}" fill="none" stroke="${C.track}" stroke-width="15"/>${segments}</svg><div class="donut-value${hero ? ' is-hero' : ''}"><strong data-count="${total}">${num(total)}</strong><span>${escape(centreLabel)}</span></div></div><div class="chart-legend">${legend}</div></div>${total ? '' : '<p class="source">Belum ada data dalam tempoh dipilih.</p>'}${note ? `<p class="source">${escape(note)}</p>` : ''}`;
   }
 
-  /* Public dashboard: how the 12 source entries divide by degree of confirmation.
+  /* Dashboard awam: bagaimana 12 entri rekod terbahagi mengikut darjah pengesahan.
      Ordered reported -> planned -> future, so the ordinal ramp carries the order. */
   function composition(programs) {
     const groups = [
-      {key:'reported', label:'Dilaporkan dalam slide'},
+      {key:'reported', label:'Direkodkan'},
       {key:'mixed', label:'LOI & perancangan'},
       {key:'future', label:'Kerjasama masa hadapan'}
     ].map(group => ({...group, value: programs.filter(p => p.status === group.key).length}));
-    return `<section class="panel composition-panel"><div class="composition-intro"><span class="eyebrow">Gambaran rekod</span><h2>Aktiviti &amp; perancangan</h2><p class="muted">Status mengikut keterangan dalam pembentangan MAIC. Warna semakin pekat mengikut darjah pengesahan rekod.</p><p class="source">Jumlah entri bukan jumlah program selesai. Rancangan kekal dibezakan daripada rekod aktiviti.</p></div><div class="composition-chart">${donutChart(groups, 'entri sumber', {hero: true})}</div></section>`;
+    return `<section class="panel composition-panel"><div class="composition-intro"><span class="eyebrow">Gambaran rekod</span><h2>Aktiviti &amp; perancangan</h2><p class="muted">Warna semakin pekat mengikut darjah pengesahan rekod.</p><p class="source">Jumlah entri bukan jumlah program selesai. Rancangan kekal dibezakan daripada rekod aktiviti.</p></div><div class="composition-chart">${donutChart(groups, 'entri rekod', {hero: true})}</div></section>`;
   }
 
   /* Admin inbox: new -> read -> resolved is a workflow order, so it takes the same ramp. */
@@ -122,11 +122,121 @@ window.CAAITVisuals = (() => {
   /* ---------- Stage ladder: the roadmap as an ordered progression ---------- */
   function stages(items) {
     const colours = ['#cdbdf2', '#b795f2', '#a179ec', '#8b5ce3', '#7340d2', '#5b21c7'];
-    // An absent date is recessive: it is missing source data, not a milestone to shout.
+    // A stage with no date simply shows none: the ladder reads by order, not by calendar.
     return `<ol class="stage-track">${items.map((item, index) => {
-      const undated = /tidak dinyatakan/i.test(item.date);
-      return `<li class="stage" style="--stage:${colours[index % colours.length]}"><span class="stage-rail" aria-hidden="true"></span><span class="stage-index">${String(index + 1).padStart(2, '0')}</span><h3>${escape(item.title)}</h3><p class="stage-date${undated ? ' is-undated' : ''}">${escape(item.date)}</p><p>${escape(item.body)}</p></li>`;
+      const colour = colours[index % colours.length];
+      const date = String(item.date || '').trim();
+      return `<li class="stage" style="--stage:${colour}">` +
+        `<span class="stage-rail" aria-hidden="true"></span>` +
+        `<span class="stage-node" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>` +
+        `<h3>${escape(item.title)}</h3>` +
+        (date ? `<p class="stage-date">${escape(date)}</p>` : '') +
+        `<p class="stage-body">${escape(item.body)}</p></li>`;
     }).join('')}</ol>`;
+  }
+
+  /* ---------- Neural field: a living echo of the logo's node mesh ----------
+     Canvas rather than a 3D library: the page ships under a strict script-src CSP that
+     blocks every CDN, and the whole project stays dependency-free and build-free.
+     A few hundred lines of 2D beat a 600KB import for a decorative field. */
+  function neural(options = {}) {
+    return `<canvas class="neural-field" data-neural='${escape(JSON.stringify(options))}' aria-hidden="true"></canvas>`;
+  }
+
+  const fields = new Set();
+  function stopFields() {
+    for (const field of fields) field.stop();
+    fields.clear();
+  }
+
+  function wireNeural(root) {
+    root.querySelectorAll('.neural-field:not([data-wired])').forEach(canvas => {
+      canvas.dataset.wired = 'true';
+      let settings = {};
+      try { settings = JSON.parse(canvas.dataset.neural || '{}'); } catch { settings = {}; }
+      const density = settings.density ?? 0.00012;
+      const maxNodes = settings.max ?? 70;
+      const link = settings.link ?? 132;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+
+      let nodes = [], width = 0, height = 0, ratio = 1, frame = 0, visible = true, alive = true;
+
+      function layout() {
+        const box = canvas.getBoundingClientRect();
+        if (!box.width || !box.height) return false;
+        ratio = Math.min(2, devicePixelRatio || 1);
+        width = box.width; height = box.height;
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        const count = Math.max(18, Math.min(maxNodes, Math.round(width * height * density)));
+        nodes = Array.from({length: count}, () => ({
+          x: Math.random() * width, y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
+          r: 1.1 + Math.random() * 1.9,
+          hot: Math.random() < 0.18          // a few nodes carry the accent
+        }));
+        return true;
+      }
+
+      function draw(step) {
+        context.clearRect(0, 0, width, height);
+        for (const node of nodes) {
+          if (step) {
+            node.x += node.vx; node.y += node.vy;
+            if (node.x < 0 || node.x > width) node.vx *= -1;
+            if (node.y < 0 || node.y > height) node.vy *= -1;
+          }
+        }
+        // Edges first so nodes sit on top of them.
+        context.lineWidth = 1;
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+            const distance = Math.hypot(dx, dy);
+            if (distance > link) continue;
+            const strength = (1 - distance / link) * 0.42;
+            context.strokeStyle = `rgba(91,33,199,${strength.toFixed(3)})`;
+            context.beginPath();
+            context.moveTo(nodes[i].x, nodes[i].y);
+            context.lineTo(nodes[j].x, nodes[j].y);
+            context.stroke();
+          }
+        }
+        for (const node of nodes) {
+          context.fillStyle = node.hot ? 'rgba(224,32,168,.75)' : 'rgba(91,33,199,.52)';
+          context.beginPath();
+          context.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+          context.fill();
+        }
+      }
+
+      function tick() {
+        if (!alive) return;
+        if (visible) draw(true);
+        frame = requestAnimationFrame(tick);
+      }
+
+      const onResize = () => { if (layout()) draw(false); };
+      const seen = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; }, {threshold: 0});
+
+      const field = {
+        stop() {
+          alive = false;
+          cancelAnimationFrame(frame);
+          seen.disconnect();
+          removeEventListener('resize', onResize);
+        }
+      };
+
+      if (!layout()) { requestAnimationFrame(() => { if (layout()) draw(false); }); return; }
+      addEventListener('resize', onResize, {passive: true});
+      seen.observe(canvas);
+      fields.add(field);
+      // Reduced motion still gets the picture, just held still.
+      if (reduced.matches) draw(false); else tick();
+    });
   }
 
   /* ---------- Sparkline for stat tiles ---------- */
@@ -267,8 +377,10 @@ window.CAAITVisuals = (() => {
     // Disconnected views never keep observers or animations alive.
     for (const observer of observers) { observer.disconnect(); observers.delete(observer); }
     for (const animation of running) { animation.cancel(); running.delete(animation); }
+    stopFields();
     wireTrend(root);
     wireColumns(root);
+    wireNeural(root);
 
     const counters = root.querySelectorAll('[data-count]:not([data-counted])');
     const targets = root.querySelectorAll('.stat,.bar-fill,.trend-line,.trend-area,.trend-dot,.trend-peak,.trend-end,.donut-wrap,.column-mark,.column-value,.intro-grid,.admin-welcome,.training-metric,.chart-card-title,.stage');
@@ -313,5 +425,5 @@ window.CAAITVisuals = (() => {
     observers.clear();
   });
 
-  return {composition, distribution, donutChart, columns, bars, stages, sparkline, trend, enhance, palette: C, num};
+  return {composition, distribution, donutChart, columns, bars, stages, neural, sparkline, trend, enhance, palette: C, num};
 })();

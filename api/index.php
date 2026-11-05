@@ -1,7 +1,7 @@
 <?php
 require __DIR__.'/bootstrap.php';
 $action=$_GET['action']??'session';
-$modules=['dashboard','about','organization','roadmap','programs','partners','training','canva','bob','github','feedback'];
+$modules=['welcome','dashboard','about','organization','roadmap','programs','partners','training','canva','bob','github','feedback'];
 $method=$_SERVER['REQUEST_METHOD'];
 $input=[];
 if ($method==='POST') {
