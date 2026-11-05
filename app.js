@@ -72,7 +72,7 @@ async function api(action,body,params='',allowRetry=true){
   if(body.request_id)await new Promise(done=>setTimeout(done,2200));
   return api(action,body,params,false);
  }
- throw Error(result.error||'Permintaan gagal.');
+ throw Error(result.detail?result.error+' ('+result.detail+')':(result.error||'Permintaan gagal.'));
 }
 function programCard(p){const status={reported:'Direkodkan',mixed:'LOI & perancangan',future:'Kerjasama masa hadapan'};return `<article class="program" data-status="${p.status}">${p.image?`<img src="assets/${p.image}" alt="${e(p.title)}" loading="lazy">`:`<span class="number">${String(p.id).padStart(2,'0')}</span>`}<div><span class="badge ${p.status==='reported'?'':'future'}">${status[p.status]}</span><h3>${e(p.title)}</h3><p class="muted">${e(p.date)}</p><p>${e(p.text)}</p>${p.audience?`<strong>${p.audienceLabel} active streaming</strong>`:''}${p.image?`<a href="assets/${p.image}" target="_blank" rel="noopener">Lihat imej penuh ↗</a>`:''}</div></article>`;}
 function welcome(){

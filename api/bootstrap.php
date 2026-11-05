@@ -9,7 +9,11 @@ function reply(array $data, int $status = 200): never {
 }
 set_exception_handler(function(Throwable $error) {
     error_log('CAAiT: ' . $error->getMessage());
-    reply(['error'=>'Perkhidmatan belum tersedia. Cuba semula atau hubungi pentadbir.'],503);
+    // A signed-in admin sees the real cause, so a database problem is diagnosable without
+    // server log access. Everyone else keeps the generic line.
+    $detail = (PHP_SAPI !== 'cli' && isset($_SESSION) && isset($_SESSION['admin']))
+        ? ['detail' => $error->getMessage()] : [];
+    reply(['error'=>'Perkhidmatan belum tersedia. Cuba semula atau hubungi pentadbir.'] + $detail, 503);
 });
 $defaultConfig = PHP_OS_FAMILY === 'Windows' ? 'C:/xampp/caait-config.php' : dirname(__DIR__, 2) . '/caait-config.php';
 $configPath = getenv('CAAIT_CONFIG') ?: $defaultConfig;
