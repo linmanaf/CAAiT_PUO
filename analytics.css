@@ -319,7 +319,6 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
   background:linear-gradient(135deg,var(--c-violet),var(--c-accent));-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;color:var(--c-violet)}
 .org-dept-label{display:block;font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.35}
-.org-branch .source{margin-top:20px}
 @media(hover:hover){
   .org-dept{transition:transform .22s,box-shadow .22s,border-color .22s}
   .org-dept:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:#e0cdf0;background:#fff}
