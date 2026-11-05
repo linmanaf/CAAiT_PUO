@@ -383,7 +383,7 @@ window.CAAITVisuals = (() => {
     wireNeural(root);
 
     const counters = root.querySelectorAll('[data-count]:not([data-counted])');
-    const targets = root.querySelectorAll('.stat,.bar-fill,.trend-line,.trend-area,.trend-dot,.trend-peak,.trend-end,.donut-wrap,.column-mark,.column-value,.intro-grid,.admin-welcome,.training-metric,.chart-card-title,.journey-step,.journey-progress,.org-node');
+    const targets = root.querySelectorAll('.stat,.bar-fill,.trend-line,.trend-area,.trend-dot,.trend-peak,.trend-end,.donut-wrap,.column-mark,.column-value,.intro-grid,.admin-welcome,.training-metric,.chart-card-title,.journey-step,.journey-progress,.org-node,.org-dept');
     if (reduced.matches) {
       counters.forEach(node => { node.dataset.counted = 'true'; countUp(node); });
       return;
@@ -399,7 +399,7 @@ window.CAAITVisuals = (() => {
         const order = node.parentElement ? [...node.parentElement.children].indexOf(node) : 0;
         let frames = [{opacity:0, transform:'translateY(12px)'}, {opacity:1, transform:'translateY(0)'}];
         let duration = 650, delay = 0;
-        if (node.classList.contains('stat') || node.classList.contains('journey-step') || node.classList.contains('org-node')) delay = order * 85;
+        if (node.classList.contains('stat') || node.classList.contains('journey-step') || node.classList.contains('org-node') || node.classList.contains('org-dept')) delay = order * 85;
         if (node.classList.contains('journey-progress')) { frames = [{transform:'scaleX(0)'}, {transform:'scaleX(1)'}]; duration = 1400; }
         if (node.classList.contains('bar-fill')) frames = [{transform:'scaleX(0)'}, {transform:'scaleX(1)'}];
         if (node.classList.contains('column-mark')) { frames = [{transform:'scaleY(0)'}, {transform:'scaleY(1)'}]; duration = 720; delay = order * 10; }
