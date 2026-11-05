@@ -2,6 +2,9 @@
 -- Import sekali melalui phpMyAdmin pada database CAAiT.
 -- Selamat diimport berulang kali: modul yang sudah wujud tidak ditulis ganti.
 
+-- Pastikan aksara khas (petikan melengkung, sengkang panjang) selamat semasa disalin.
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS training (
  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
  slug VARCHAR(40) NOT NULL UNIQUE,
