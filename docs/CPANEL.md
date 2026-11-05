@@ -54,6 +54,27 @@ Import `admin-production.sql` menggunakan phpMyAdmin pada database CAAiT. Fail m
 
 Login melalui `https://DOMAIN/#admin`. Akaun yang dicipta terus masuk tanpa pertukaran kata laluan wajib. Kaedah ini tidak memerlukan halaman setup awam atau Terminal cPanel.
 
+## 4b. Tiga perangkap yang menghasilkan gejala "login rosak"
+
+Ketiga-tiganya menunjukkan simptom yang hampir sama — dashboard kelihatan sempurna tetapi log masuk gagal — jadi semak mengikut urutan ini.
+
+**1. HTTPS belum aktif tetapi `secure_cookie => true`.** Ini yang paling kerap. Cookie bertanda `Secure` tidak akan dihantar browser melalui HTTP biasa, jadi sesi tidak pernah melekat: log masuk nampak berjaya, kemudian terus tercampak keluar, atau ralat `Sesi tamat` berulang. **Penyelesaian: aktifkan SSL dan pastikan kau melayari `https://`, bukan `http://`.** Jangan tetapkan `secure_cookie => false` untuk "membetulkannya" — itu mendedahkan cookie sesi.
+
+**2. Melayari `http://` sedangkan SSL sudah aktif.** Gejala sama seperti di atas. Paksa HTTPS melalui cPanel (Domains → Force HTTPS Redirect).
+
+**3. Config tidak dijumpai atau tidak lengkap.** API akan membalas `Konfigurasi pelayan diperlukan` atau `Konfigurasi pelayan tidak lengkap` dengan status 503. Semak lokasi fail config dan pastikan kelima-lima kunci (`dsn`, `user`, `password`, `secure_cookie`, `environment`) ada. Kalau `environment` ialah `production` sementara `secure_cookie` bukan `true`, API sengaja menolak dengan `Production memerlukan secure_cookie=true dan HTTPS.`
+
+Cara pantas membezakan: buka `https://DOMAIN/api/index.php?action=session` terus dalam browser.
+
+| Apa yang dipaparkan | Maksudnya |
+|---|---|
+| JSON dengan `"csrf"` dan `"local":false` | Backend sihat; masalahnya cookie/HTTPS |
+| `{"error":"Konfigurasi pelayan ..."}` | Masalah config (perangkap 3) |
+| Halaman ralat 500 | `.htaccess` atau mod_rewrite; semak Error Log cPanel |
+| Muat turun fail atau kod PHP mentah | PHP tidak dilaksanakan; semak versi PHP domain |
+
+Nota import admin: SQL yang dijana ialah `INSERT` biasa. Jika username itu sudah wujud, phpMyAdmin akan memaparkan ralat *Duplicate entry* — itu perlindungan yang disengajakan supaya akaun sedia ada tidak ditulis ganti, bukan kerosakan.
+
 ## 5. Sahkan pada URL sebenar
 
 - Semua logo/menu/latihan dibuka; uji telefon 375px.
