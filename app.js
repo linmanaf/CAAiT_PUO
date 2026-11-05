@@ -185,20 +185,24 @@ content.addEventListener('click',async ev=>{if(ev.target.id==='retry')render();
  if(ev.target.id==='training-cancel'){trainingEditing=null;renderTrainingPanel();return;}
  if(ev.target.id==='training-restore'){
   const button=ev.target;button.disabled=true;button.textContent='Memulihkan…';
-  try{
-   const have=new Set(data.training.map(t=>t.id));
-   let added=0;
-   for(const seed of seedTraining){
-    if(have.has(seed.id))continue;
-    await api('training-save',{...toRow(seed),is_new:true});
-    added++;
-   }
-   await reloadTraining();trainingEditing=null;renderTrainingPanel();
-   showSuccess(added+' modul asal berjaya dipulihkan.');
-  }catch(err){
-   button.disabled=false;button.textContent='Pulihkan modul asal';
-   const notice=document.createElement('p');notice.className='inline-error';notice.setAttribute('role','alert');notice.textContent=err.message;
+  const have=new Set(data.training.map(t=>t.id));
+  const failures=[];
+  let added=0;
+  // One module failing must not strand the rest: keep going and report what did not land.
+  for(const seed of seedTraining){
+   if(have.has(seed.id))continue;
+   try{await api('training-save',{...toRow(seed),is_new:true});added++;}
+   catch(err){failures.push(seed.title+': '+err.message);}
+  }
+  try{await reloadTraining();}catch{}
+  trainingEditing=null;renderTrainingPanel();
+  if(failures.length){
+   const notice=document.createElement('p');
+   notice.className='inline-error';notice.setAttribute('role','alert');
+   notice.textContent=(added?added+' modul dipulihkan. ':'')+failures.length+' gagal — '+failures.join(' · ');
    document.querySelector('#training-admin')?.prepend(notice);
+  }else{
+   showSuccess(added+' modul asal berjaya dipulihkan.');
   }
   return;
  }
