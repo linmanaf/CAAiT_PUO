@@ -17,7 +17,8 @@ const quote = value => "'" + String(value).replace(/\\/g, '\\\\').replace(/'/g, 
 
 const schema = read('database/schema.sql');
 const start = schema.indexOf('CREATE TABLE IF NOT EXISTS training');
-const table = schema.slice(start, schema.indexOf('ENGINE=InnoDB;', start) + 'ENGINE=InnoDB;'.length);
+// Slice to the statement terminator, so the table options travel with the DDL.
+const table = schema.slice(start, schema.indexOf(';', start) + 1);
 
 const columns = 'slug,title,tag,description,objectives,requirements,steps,prompt,practice,outcome,sources,position';
 const rows = modules.map((module, index) => {

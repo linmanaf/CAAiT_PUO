@@ -24,6 +24,14 @@ Selepas itu modul latihan diurus sepenuhnya dari panel admin — tambah, kemas k
 
 Pengecam modul (bahagian selepas `#` dalam URL) dikunci selepas modul dicipta, kerana ia juga kunci rekod analytics dan alamat yang boleh di-bookmark. Membuang modul **tidak** memadam sejarah lawatannya; laporan lama kekal utuh.
 
+## 2c. Set aksara database
+
+Sesetengah akaun cPanel mencipta database dengan default `latin1`. Jadual yang dicipta tanpa charset eksplisit akan mewarisinya, dan MySQL kemudian **menolak** aksara yang tiada dalam cp1252 — anak panah `→`, emoji, dan banyak lagi — dengan ralat `Incorrect string value`. Petikan melengkung `“ ”` pula diterima, kerana cp1252 mengandunginya. Itu menjadikan masalah ini kelihatan rawak: sesetengah kandungan masuk, sesetengah tidak.
+
+Skema semasa mengisytiharkan `utf8mb4` pada setiap jadual, jadi pemasangan baharu selamat. Untuk database yang **sudah dicipta sebelum ini**, jalankan `installation/fix-charset.sql` melalui phpMyAdmin. Ia menukar database dan kelima-lima jadual kepada `utf8mb4`; data sedia ada ditukar, bukan dipadam, dan ia selamat dijalankan berulang kali.
+
+Ini bukan isu modul latihan sahaja. `feedback.message` turut terjejas: pelawat yang menaip emoji atau anak panah dalam borang maklum balas akan gagal menghantar.
+
 ## 3. Konfigurasi persendirian
 
 Salin `installation/config.example.php` menjadi `/home/USERNAME_CPANEL/caait-config.php`, di luar `public_html`. Isi DSN, username database dan password database yang sebenar. Pastikan `environment` ialah `production` dan `secure_cookie` ialah `true`.

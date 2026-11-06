@@ -13,6 +13,7 @@ foreach ($file in $runtimeFiles) { Copy-Item -LiteralPath (Join-Path $projectRoo
 foreach ($folder in @('api','assets')) { Copy-Item -LiteralPath (Join-Path $projectRoot $folder) -Destination $public -Recurse }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'database/schema.sql') -Destination $install
 Copy-Item -LiteralPath (Join-Path $projectRoot 'database/training-seed.sql') -Destination $install
+Copy-Item -LiteralPath (Join-Path $projectRoot 'database/fix-charset.sql') -Destination $install
 Copy-Item -LiteralPath (Join-Path $projectRoot 'config.example.php') -Destination $install
 Copy-Item -LiteralPath (Join-Path $projectRoot 'scripts/export-admin.php') -Destination $install
 Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/CPANEL.md') -Destination (Join-Path $stage 'MULA-DI-SINI.md')
@@ -32,7 +33,7 @@ $zip = [IO.Compression.ZipFile]::OpenRead($archive)
 try {
     $names = @($zip.Entries | ForEach-Object { $_.FullName.Replace('\','/') })
     if ($zip.Entries | Where-Object { $_.FullName.Contains('\') }) { throw 'Non-portable ZIP path separator' }
-    foreach ($required in @('public_html/index.html','public_html/visuals.js','public_html/.htaccess','public_html/api/index.php','installation/schema.sql','installation/training-seed.sql','MULA-DI-SINI.md')) {
+    foreach ($required in @('public_html/index.html','public_html/visuals.js','public_html/.htaccess','public_html/api/index.php','installation/schema.sql','installation/training-seed.sql','installation/fix-charset.sql','MULA-DI-SINI.md')) {
         if ($names -notcontains $required) { throw "Missing package file: $required" }
     }
     if ($names | Where-Object { $_ -match '(^|/)(\.git|\.work|node_modules|config\.local\.php|caait-config\.php|motion-qa\.json)(/|$)' }) { throw 'Private file included in release' }

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS training (
  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  INDEX (position, id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO training(slug,title,tag,description,objectives,requirements,steps,prompt,practice,outcome,sources,position) VALUES ('canva','Canva + Canva AI','Reka bentuk & komunikasi','Susun bahan pembentangan dan hasilkan dashboard satu halaman yang mudah dibaca.','Menyusun pembentangan dengan hierarki tajuk, isi dan visual.
 Menggunakan bantuan AI sambil mengekalkan ketepatan sumber.
