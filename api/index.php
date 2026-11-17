@@ -1,7 +1,7 @@
 <?php
 require __DIR__.'/bootstrap.php';
 $action=$_GET['action']??'session';
-$modules=['welcome','dashboard','about','organization','roadmap','programs','partners','training','feedback'];
+$modules=['welcome','prakata','prakata-timbalan','prakata-ketua','dashboard','about','organization','roadmap','programs','partners','training','feedback'];
 // Training modules are admin-managed, so the valid module list follows the table rather than
 // a hard-coded array. Before the table exists the legacy slugs keep analytics working.
 try { foreach (query('SELECT slug FROM training')->fetchAll(PDO::FETCH_COLUMN) as $slug) $modules[]=$slug; }
@@ -83,7 +83,7 @@ if ($action==='training-save') {
     $isNew=($input['is_new']??false)===true;
     if (!preg_match('/^[a-z0-9][a-z0-9-]{1,39}$/D',$slug)) reply(['error'=>'Gunakan pengecam 2–40 aksara: huruf kecil, nombor dan sengkang sahaja.'],422);
     // A slug is an analytics key and a bookmarkable address, so it is set once and then frozen.
-    if (in_array($slug,['welcome','dashboard','about','organization','roadmap','programs','partners','training','feedback','admin'],true)) reply(['error'=>'Pengecam itu digunakan oleh modul sistem. Pilih yang lain.'],422);
+    if (in_array($slug,['welcome','prakata','prakata-timbalan','prakata-ketua','dashboard','about','organization','roadmap','programs','partners','training','feedback','admin'],true)) reply(['error'=>'Pengecam itu digunakan oleh modul sistem. Pilih yang lain.'],422);
     $fields=['title'=>160,'tag'=>120,'description'=>400];
     $values=[];
     foreach ($fields as $name=>$limit) {

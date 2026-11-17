@@ -1,6 +1,6 @@
 # Pemasangan CAAiT di cPanel JimatHosting
 
-Pakej ini disediakan untuk upload kemudian; belum diterbitkan pada hosting. Domain, versi PHP dan ciri sebenar pakej JimatHosting belum diperiksa melalui akaun hosting.
+Dashboard **sudah diterbitkan** pada https://caaitpuo.info/. Panduan ini kekal sebagai rujukan pemasangan dan untuk memuat naik keluaran seterusnya; langkah 2, 3 dan 4 hanya terpakai pada pemasangan baharu, kerana database, config dan akaun admin sudah sedia ada. Untuk kemas kini biasa, langkah 1 sahaja yang diperlukan.
 
 ## 1. Muat naik fail website
 

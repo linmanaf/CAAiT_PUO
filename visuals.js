@@ -111,7 +111,7 @@ window.CAAITVisuals = (() => {
       {key:'mixed', label:'LOI & perancangan'},
       {key:'future', label:'Kerjasama masa hadapan'}
     ].map(group => ({...group, value: programs.filter(p => p.status === group.key).length}));
-    return `<section class="panel composition-panel"><div class="composition-intro"><span class="eyebrow">Gambaran rekod</span><h2>Aktiviti &amp; perancangan</h2><p class="muted">Warna semakin pekat mengikut darjah pengesahan rekod.</p><p class="source">Jumlah entri bukan jumlah program selesai. Rancangan kekal dibezakan daripada rekod aktiviti.</p></div><div class="composition-chart">${donutChart(groups, 'entri rekod', {hero: true})}</div></section>`;
+    return `<section class="panel composition-panel"><div class="composition-intro"><span class="eyebrow">Gambaran rekod</span><h2>Aktiviti &amp; perancangan</h2><p class="muted">Warna semakin pekat mengikut darjah pengesahan rekod.</p></div><div class="composition-chart">${donutChart(groups, 'entri rekod', {hero: true})}</div></section>`;
   }
 
   /* Admin inbox: new -> read -> resolved is a workflow order, so it takes the same ramp. */

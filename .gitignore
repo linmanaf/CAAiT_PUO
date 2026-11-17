@@ -1,4 +1,7 @@
 .work/
+# Transient hand-off inbox: the folder is renamed and refilled each round with source
+# documents and marked-up screenshots. Whatever it carries ends up in content.js and docs/.
+New update*/
 config.local.php
 *.log
 .env

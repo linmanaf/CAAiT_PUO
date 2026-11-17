@@ -297,7 +297,7 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
   background:#f0ecf8;border:3px solid #fff}
 .org-id{min-width:0}
 .org-id strong{display:block;font-size:16px;color:var(--text);line-height:1.3;letter-spacing:-.2px}
-.org-id span{display:block;font-size:12.5px;color:var(--muted);margin-top:4px}
+.org-id>span{display:block;font-size:12.5px;color:var(--muted);margin-top:4px}
 @media(hover:hover){
   .org-node{transition:transform .22s,box-shadow .22s,border-color .22s}
   .org-node:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:#ddd2f3}
@@ -368,3 +368,120 @@ nav a.active{background:var(--tint);color:var(--violet);border-left-color:var(--
   background:linear-gradient(135deg,#fdf0f8,#f7f1fe);border:1px solid #f0dcee}
 .training-restore strong{display:block;font-size:14px;color:var(--text)}
 .training-restore span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ---------------- Photographic record ---------------- */
+/* Each entry's own photographs. A caption describes only what the frame shows; nothing in
+   this block asserts anything the picture does not. */
+.shots{margin-top:22px}
+.shots+.shots{margin-top:26px;padding-top:22px;border-top:1px solid var(--border)}
+.shots-label{margin:0 0 14px;font-size:12px;font-weight:700;letter-spacing:1.1px;
+  text-transform:uppercase;color:var(--c-violet)}
+.shots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:16px}
+.shots-grid figure{margin:0;min-width:0}
+.shots-grid a{display:block;border-radius:10px;overflow:hidden;border:1px solid var(--card-ring);
+  background:var(--tint-2);line-height:0}
+.shots-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;
+  transition:transform .25s ease}
+.shots-grid a:hover img{transform:scale(1.03)}
+.shots-grid figcaption{margin-top:9px;font-size:12px;line-height:1.5;color:var(--muted)}
+
+/* Sub-blocks inside a record: named lists that belong to one entry. */
+.detail{margin-top:20px;padding-left:16px;border-left:2px solid var(--c-violet-300)}
+.detail h4{margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.4px;color:var(--text)}
+.detail ul{margin:0;padding-left:20px}
+.detail li{margin-bottom:5px;font-size:13.5px;color:var(--muted)}
+
+/* Recorded material held elsewhere. */
+.out-links{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0}
+.out-links a{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;
+  background:var(--tint);color:var(--c-violet);font-size:12.5px;font-weight:600;text-decoration:none;
+  border:1px solid var(--card-ring)}
+.out-links a:hover{background:#ece3fb}
+
+/* Product marks on the training index. Two marks share one slot for the Canva module. */
+.training-link{grid-template-columns:60px 1fr 24px}
+.training-logos{display:flex;align-items:center}
+.training-logos img{width:38px;height:38px;object-fit:contain;border-radius:9px;background:#fff;
+  border:1px solid var(--card-ring)}
+.training-logos img+img{margin-left:-13px}
+
+/* Consortium appointments. */
+.appointments{list-style:none;margin:20px 0 0;padding:0}
+.appointments li{margin:0;padding:15px 0;border-top:1px solid var(--border)}
+.appointments li:first-child{border-top:0;padding-top:4px}
+.appointment-role{display:block;font-size:11px;font-weight:700;letter-spacing:1.1px;
+  text-transform:uppercase;color:var(--c-violet);margin-bottom:6px}
+.appointments strong{display:block;font-size:15px;line-height:1.4}
+.appointments .muted{display:block;font-size:12.5px;margin-top:3px}
+
+/* ---------------- Foreword ---------------- */
+.foreword{display:grid;grid-template-columns:260px 1fr;gap:34px;align-items:start}
+/* The portrait is a cut-out PNG, so the frame has to supply everything behind it. Three layers
+   do the work: a disc that echoes the circular network motif in the CAAiT mark, a horizon the
+   figure stands on, and a contact shadow between the two. The 46px floor is not decoration —
+   with the image flush to the frame she was cropped at the ankles.
+   Both the horizon rule and the floor tint are background layers with hard colour stops, which
+   leaves both pseudo-elements free for the disc and the contact shadow. */
+.foreword-portrait{position:relative;isolation:isolate;border-radius:20px;padding:26px 22px 46px;
+  overflow:hidden;
+  background:
+    linear-gradient(to top,#cdbdf230 0 46px,#cdbdf200 46px),
+    linear-gradient(to top,transparent 0 46px,#5b21c726 46px 47px,transparent 47px),
+    linear-gradient(174deg,#fcfaff 0%,#f5eefd 56%,#f9eef8 100%);
+  border:1px solid #e6dbf8;
+  box-shadow:
+    inset 0 1px 0 #ffffffcc,
+    0 1px 2px #140b3c0d,
+    0 10px 22px -12px #140b3c33,
+    0 34px 56px -30px #5b21c770}
+/* The disc stays in the violet family: the subject wears a strong red, and running the gradient
+   into magenta set the two against each other. */
+.foreword-portrait::before{content:'';position:absolute;z-index:0;left:50%;top:10%;
+  width:82%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;
+  background:linear-gradient(150deg,#a97ff0 0%,#c2a3f5 46%,#ded0fa 100%);opacity:.62}
+/* Sits on the floor, just below where she meets it. */
+.foreword-portrait::after{content:'';position:absolute;z-index:0;left:50%;bottom:36px;
+  width:58%;height:13px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(ellipse at center,#140b3c4d,#140b3c00 72%)}
+/* drop-shadow follows the alpha channel, so the cast shadow traces her outline, not a rectangle. */
+.foreword-portrait img{display:block;width:100%;height:auto;position:relative;z-index:1;
+  filter:drop-shadow(0 16px 20px #140b3c36) drop-shadow(0 3px 4px #140b3c21)}
+/* A bust photograph is an opaque rectangle, so the disc behind it would only peek out at the
+   edges and the floor would read as a severed torso resting on a shelf. This variant drops
+   both and frames the photograph itself, keeping the card's border, radius and lift. */
+.foreword-portrait.is-photo{padding:0;background:#fff}
+.foreword-portrait.is-photo::before,
+.foreword-portrait.is-photo::after{content:none}
+.foreword-portrait.is-photo img{filter:none;border-radius:19px}
+/* Who is speaking, stated before the letter rather than only signed at the end. */
+.foreword-who{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.foreword-who strong{display:block;font-size:18px;line-height:1.35;letter-spacing:-.2px}
+/* Child selector, not descendant: as a descendant this also caught the post-nominal inside
+   the name, turning it into a purple block on its own line. */
+.foreword-who>span{display:block;margin-top:5px;font-size:12.5px;font-weight:600;
+  letter-spacing:1.1px;text-transform:uppercase;color:var(--c-violet)}
+/* A post-nominal stays joined to the end of the name — same line, same colour — keeping its
+   capitals but set smaller. em, so it tracks whatever size the name is set at. The display and
+   colour are stated so a stray descendant rule elsewhere cannot detach or recolour it again. */
+.honorific{display:inline;color:inherit;font-size:.72em;letter-spacing:.6px;font-weight:700;
+  white-space:nowrap;text-transform:none}
+.foreword-body p{font-size:14.5px;line-height:1.8;text-align:justify;text-wrap:pretty}
+/* Weight alone carries the greeting; it takes the body colour like the rest of the letter. */
+.foreword-greeting{font-weight:600}
+.foreword-sign{margin-top:26px;padding-top:20px;border-top:1px solid var(--border)}
+.foreword-sign strong{display:block;font-size:15px;letter-spacing:.3px}
+.foreword-sign>span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+
+@media(max-width:900px){
+  .foreword{grid-template-columns:1fr;gap:24px}
+  /* A definite width, not `margin:0 auto`. Auto inline margins stop a grid item stretching,
+     leaving it sized by its content — and since the portrait is `width:100%`, that percentage
+     had nothing to resolve against until the image loaded, so the frame collapsed and the
+     page jumped. justify-self centres it without making the width content-dependent. */
+  .foreword-portrait{width:230px;max-width:100%;justify-self:center}
+  .foreword-body p{text-align:left}
+}
+@media(max-width:760px){
+  .training-link{grid-template-columns:52px 1fr 15px}
+  .shots-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+}

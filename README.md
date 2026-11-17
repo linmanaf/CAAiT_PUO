@@ -2,6 +2,10 @@
 
 Dashboard berasaskan HTML/CSS/JavaScript sedia ada, dengan PHP 8.1+ dan MySQL/MariaDB. Tiada dependency npm atau proses build diperlukan.
 
+**Dashboard hidup di production:** https://caaitpuo.info/ (JimatHosting). Dokumen bertarikh sebelum 10 November 2026 dalam `docs/` masih menyatakan ia belum diterbitkan; nyataan itu sudah lapuk dan dikekalkan hanya sebagai rekod sejarah.
+
+Kemas kini 10 November: pembetulan modul Program & Pencapaian daripada `DASHBOARD CORRECTION.docx` — 29 aset foto baharu, galeri setiap rekod, halaman [Prakata Ketua Pusat](#prakata), panel Pelantikan MAIC dan logo produk pada indeks Latihan. Butiran penuh, termasuk dua angka yang sengaja tidak dipaparkan dan satu ujian yang didapati tidak pernah berfungsi, ada dalam [nota kemas kini](docs/KEMAS-KINI-2026-11-10.md).
+
 Kemas kini 5 November (petang): dashboard direka semula dengan enjin carta sendiri — carta lajur aktiviti mengikut tahun, donat status, tangga roadmap, sparkline, count-up dan perbandingan tempoh dalam panel admin. Semua warna kini diambil terus daripada logo CAAiT dan disahkan untuk keterlihatan; lihat [Palet dan peraturan carta](#palet-dan-peraturan-carta). Ralat log masuk admin yang berulang telah dibaiki: sesi yang luput kini dipulihkan secara automatik tanpa perlu refresh — punca dan pengesahan dalam [nota reka semula](docs/REKA-SEMULA-DASHBOARD.md). Untuk hosting JimatHosting, ikut [panduan cPanel](docs/CPANEL.md). Bina pakej upload dengan `powershell -ExecutionPolicy Bypass -File scripts/package-cpanel.ps1`; ZIP yang disemak akan berada dalam `dist/`. Pakej tidak mengandungi config sebenar atau data lokal. Kaedah admin melalui phpMyAdmin tanpa Terminal disediakan dalam panduan tersebut.
 
 ## Pratonton XAMPP
@@ -28,12 +32,14 @@ Untuk mengakses dari peranti lain dalam LAN, gunakan alamat IP komputer XAMPP me
 - `visuals.js`, `analytics.css`: visual analytics, tooltip, jadual dan animasi dengan reduced motion.
 - `content.js`: satu sumber fakta, program, angka streaming dan kandungan tiga latihan.
 - `assets/`: logo rasmi, bahan imej daripada slide dan salinan render semua 8 slide.
+- `assets/programs/`: foto dan poster setiap rekod program; galeri dikumpulkan mengikut lokasi apabila satu rekod merangkumi lebih daripada satu tempat.
+- `assets/training/`: logo produk bagi modul latihan. Dipetakan mengikut slug dalam `app.js`, bukan lajur database, supaya modul ciptaan admin terus berfungsi tanpa logo.
 - `api/`: sesi, login/logout, kata laluan, feedback, status dan analytics.
 - `database/schema.sql`: skema tanpa data atau kata laluan.
 - `config.example.php`: contoh konfigurasi tanpa rahsia.
 - `scripts/create-admin.php`: penciptaan admin melalui CLI, kata laluan daripada stdin.
 - `scripts/test-api.mjs`: ujian API XAMPP menggunakan akaun sementara.
-- `scripts/test-content.mjs`: ujian kesetiaan data dan output carta. Tidak memerlukan Apache atau database — jalankan `node scripts/test-content.mjs`.
+- `scripts/test-content.mjs`: ujian kesetiaan data dan output carta, 19 ujian. Turut mengesahkan setiap foto yang dirujuk benar-benar wujud dan membawa kapsyen. Tidak memerlukan Apache atau database — jalankan `node scripts/test-content.mjs`.
 - `scripts/build-training-seed.mjs`: menjana `database/training-seed.sql` daripada modul benih dalam `content.js`.
 - `database/training-seed.sql`: jadual modul latihan dan kandungan permulaan, untuk import phpMyAdmin.
 - `docs/SERAHAN.md`: keputusan ujian, audit kandungan dan perkara untuk pengesahan.

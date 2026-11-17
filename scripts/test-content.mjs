@@ -2,7 +2,7 @@
    that the dashboard numbers still match the institutional record, and that the chart
    engine renders those numbers without inventing or dropping any. Run: node scripts/test-content.mjs */
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync, existsSync} from 'node:fs';
 import vm from 'node:vm';
 
 const root = new URL('..', import.meta.url);
@@ -112,16 +112,30 @@ check('Journey keeps its order and omits dates it does not have', () => {
 });
 
 check('No source vocabulary leaks into anything a visitor can read', () => {
-  const banned = /(slide|MAIC)/i;
+  // The ban covers the source *document*: the deck and its filename. "MAIC" on its own is the
+  // consortium the centre actually sits on, and is published content in its own right.
+  // The escape below is deliberate: an earlier revision held literal backspace characters here,
+  // which made the pattern unmatchable and left this whole check inert.
+  const banned = /(\bslide\b|MAIC\s*MEETING|\.pptx)/i;
   for (const entry of data.programs) {
-    for (const field of ['title', 'date', 'text', 'year']) {
+    for (const field of ['title', 'date', 'text', 'year', 'note']) {
       assert.ok(!banned.test(String(entry[field] ?? '')), entry.title + '.' + field + ' still names a source');
+    }
+    for (const block of entry.details ?? []) {
+      assert.ok(!banned.test(block.heading + ' ' + block.items.join(' ')),
+        entry.title + ' carries a source reference in its detail blocks');
+    }
+    for (const group of entry.gallery ?? []) {
+      assert.ok(!banned.test(group.label + ' ' + group.items.map(i => i.caption).join(' ')),
+        entry.title + ' carries a source reference in a caption');
     }
   }
   for (const [title, date, body] of data.roadmap) {
     assert.ok(!banned.test(title + ' ' + date + ' ' + body), 'roadmap stage ' + title + ' still names a source');
   }
   assert.ok(!banned.test(data.intro), 'intro still names a source');
+  assert.ok(!banned.test(data.forewords.flatMap(f => f.paragraphs).join(' ')), 'a foreword still names a source');
+  assert.ok(!banned.test(data.appointments.roles.flat().join(' ')), 'an appointment still names a source');
   const rendered = [
     viz.composition(data.programs),
     viz.stages(data.roadmap.map(([title, date, body]) => ({title, date, body}))),
@@ -147,6 +161,137 @@ check('Organisation chain holds five roles, each with a portrait', () => {
     assert.ok(name && role && photo, name + ' is missing a field');
   }
   assert.equal(data.coordinators.length, 7);
+});
+
+check('Every photograph a record shows exists on disk and carries a caption', () => {
+  const seen = new Set();
+  let shots = 0;
+  for (const entry of data.programs) {
+    for (const group of entry.gallery ?? []) {
+      assert.ok(group.items.length, entry.title + ' has an empty photograph group');
+      for (const item of group.items) {
+        assert.ok(existsSync(new URL('assets/' + item.src, root)), 'missing file: assets/' + item.src);
+        assert.ok(item.caption && item.caption.trim().length > 8, item.src + ' needs a real caption');
+        assert.ok(!seen.has(item.src), item.src + ' is shown twice');
+        seen.add(item.src);
+        shots++;
+      }
+    }
+    // A single-location record must not carry a redundant group heading.
+    if ((entry.gallery ?? []).length === 1) assert.equal(entry.gallery[0].label, '', entry.title + ' needs no group label');
+  }
+  assert.ok(shots >= 20, 'the photographic record is present');
+  for (const entry of data.programs) {
+    if (entry.image) assert.ok(existsSync(new URL('assets/' + entry.image, root)), 'missing lead image: ' + entry.image);
+  }
+});
+
+check('Material held off-site is linked over https and nowhere else', () => {
+  const links = data.programs.flatMap(p => p.links ?? []);
+  // Five, not six: the AI Awareness livestream URL had expired, so the button was removed
+  // rather than left pointing at a dead page.
+  assert.ok(links.length >= 5, 'the recorded off-site material is linked');
+  for (const link of links) {
+    assert.match(link.url, /^https:\/\//, link.label + ' must be https');
+    assert.ok(link.label && !/^https?:/i.test(link.label), 'a link must read as a label, not a bare URL');
+  }
+});
+
+check('Each foreword ships its paragraphs, portrait and signature, in order of office', () => {
+  // The running order is the order of office, and it is the one thing a reader will notice
+  // if it slips, so it is asserted rather than left to the order of the array literal.
+  // Spread into a host array: values cross a vm realm and carry its Array prototype.
+  assert.deepEqual([...data.forewords.map(f => f.role)],
+    ['Pengarah', 'Timbalan Pengarah (Akademik)', 'Ketua Pusat CAAiT']);
+  const signatories = data.forewords.map(f => f.name).join(' | ');
+  assert.match(signatories, /Salmi.*Norman.*Marlina/);
+  for (const f of data.forewords) {
+    assert.ok(f.paragraphs.length >= 5, f.role + ' lost part of its text');
+    for (const p of f.paragraphs) assert.ok(p.trim().length > 40, f.role + ' has a truncated paragraph');
+    assert.ok(existsSync(new URL('assets/' + f.portrait, root)), 'missing portrait: ' + f.portrait);
+    assert.ok(['photo', 'cutout'].includes(f.kind), f.role + ' needs a known portrait kind');
+    // Without intrinsic dimensions the lazy-loaded portraits collapse and the page jumps
+    // as each one arrives — very visible with three stacked forewords.
+    assert.ok(Array.isArray(f.size) && f.size.length === 2 && f.size.every(n => n > 0),
+      f.role + ' portrait needs intrinsic width and height');
+    // The name is its own field now, so the honorific can be marked up separately; the
+    // signature holds only the lines beneath it.
+    assert.ok(f.name && f.name.trim(), f.role + ' needs a name');
+    assert.ok(f.signature.length >= 2, f.role + ' needs a full signature block');
+    assert.ok(!/\bb\.c\.n\b/i.test(f.signature.join(' ')),
+      f.role + ' must not bake a post-nominal into the signature lines');
+    if (f.honorific !== undefined) {
+      assert.equal(f.honorific, f.honorific.toUpperCase(), 'a post-nominal is set in capitals');
+    }
+    // Greeting and closing are genuinely optional — only one signatory wrote both.
+    for (const field of ['greeting', 'closing']) {
+      if (f[field] !== undefined) assert.ok(f[field].trim(), f.role + ' has an empty ' + field);
+    }
+  }
+  // Only an alpha cut-out gets the floor treatment; a flat photograph must not claim it.
+  const cutouts = data.forewords.filter(f => f.kind === 'cutout');
+  assert.equal(cutouts.length, 1);
+  assert.match(cutouts[0].portrait, /\.png$/);
+});
+
+check('Every foreword route is whitelisted by the API', () => {
+  // Each foreword is its own route, so its slug is also an analytics module id. A slug that
+  // is missing from $modules is rejected with 422 at runtime — silently, since analytics is
+  // deliberately fire-and-forget. Cheaper to catch here than to notice months of lost views.
+  const php = read('api/index.php');
+  const line = php.match(/^\$modules=\[(.*?)\];/m);
+  assert.ok(line, 'could not find $modules in api/index.php');
+  const whitelisted = [...line[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+  for (const f of data.forewords) {
+    assert.ok(whitelisted.includes(f.slug), f.slug + ' is missing from $modules in api/index.php');
+  }
+  const slugs = [...data.forewords.map(f => f.slug)];
+  assert.equal(new Set(slugs).size, slugs.length, 'two forewords share a slug');
+});
+
+check('A post-nominal is never detached or recoloured by a descendant rule', () => {
+  // `.foreword-who span` and `.org-id span` style the role line under a name. Written as
+  // descendant selectors they also hit the .honorific inside the name itself, which made
+  // B.C.N a purple block on its own line instead of staying joined to the name. The child
+  // combinator is what keeps them apart, so it is pinned here.
+  const css = read('analytics.css');
+  // Every block that puts a sub-label under a name and may also hold a .honorific inside it.
+  for (const parent of ['.foreword-who', '.foreword-sign', '.org-id']) {
+    assert.ok(css.includes(parent + '>span{'),
+      parent + ' must use the child combinator so it cannot swallow .honorific');
+    assert.ok(!new RegExp(parent.replace('.', '\\.') + '\\s+span\\s*\\{').test(css),
+      parent + ' still has a descendant span rule that would catch .honorific');
+  }
+  const rule = css.match(/\.honorific\{([^}]*)\}/);
+  assert.ok(rule, '.honorific rule is missing');
+  assert.match(rule[1], /display:inline/, 'the post-nominal must stay on the name’s line');
+  assert.match(rule[1], /color:inherit/, 'the post-nominal must take the name’s colour');
+  assert.ok(!/color:var\(--c-violet\)/.test(rule[1]), 'the post-nominal must not be purple');
+  // <strong> is 700 by default, so anything lighter reads as thinner than the name it follows.
+  assert.match(rule[1], /font-weight:700/, 'the post-nominal must be as bold as the name');
+});
+
+check('Consortium appointments name a role, a person and a post', () => {
+  const a = data.appointments;
+  assert.equal(a.roles.length, 2);
+  assert.ok(existsSync(new URL('assets/' + a.banner, root)), 'missing banner: ' + a.banner);
+  for (const row of a.roles) {
+    // role, person, post — plus an optional fourth slot for a post-nominal.
+    assert.ok(row.length === 3 || row.length === 4, 'an appointment row has the wrong shape');
+    for (const cell of row) assert.ok(cell && cell.trim(), 'an appointment field is blank');
+    if (row.length === 4) assert.equal(row[3], row[3].toUpperCase(), 'a post-nominal is set in capitals');
+  }
+  // Each listed person must also be traceable in the organisation chain or be the centre head.
+  assert.match(a.roles.map(r => r[1]).join(' '), /Salmi/);
+  assert.match(a.roles.map(r => r[1]).join(' '), /Marlina/);
+});
+
+check('Training marks resolve for every seeded module', () => {
+  const marks = {canva: ['training/canva.jpg', 'training/canva-ai.jpg'], bob: ['training/ibm-bob.png'], github: ['training/github.png']};
+  for (const module of data.training) {
+    assert.ok(marks[module.id], module.id + ' has no product mark');
+    for (const src of marks[module.id]) assert.ok(existsSync(new URL('assets/' + src, root)), 'missing mark: ' + src);
+  }
 });
 
 console.log(JSON.stringify({passed: results.length, results}, null, 2));
